@@ -1,0 +1,1824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Komorebi Cat Cafe - Cozy Simulator & Collector</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Fredoka for cozy headers, Quicksand for readable cute UI -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for crisp cozy icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        heading: ['Fredoka', 'sans-serif'],
+                        body: ['Quicksand', 'sans-serif'],
+                    },
+                    colors: {
+                        cream: '#FFFDF7',
+                        latte: '#F5EBE0',
+                        wood: {
+                            light: '#D5BDAF',
+                            DEFAULT: '#A98467',
+                            dark: '#6C584C',
+                        },
+                        matcha: {
+                            light: '#E9F5DB',
+                            DEFAULT: '#ADC178',
+                            dark: '#718355',
+                        },
+                        sakura: {
+                            light: '#FFE5EC',
+                            DEFAULT: '#FFB3C6',
+                            dark: '#FB6F92',
+                        },
+                        amber: {
+                            cozy: '#F4A261'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #F5EBE0;
+            color: #4A3B32;
+            user-select: none;
+            overflow-x: hidden;
+        }
+        h1, h2, h3, h4, .font-heading {
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        /* Cozy Café Floor Background Pattern */
+        .cafe-wall {
+            background: linear-gradient(180deg, #FFF8EC 0%, #F5E6D3 62%, #E3C9A8 62%, #D4B48E 100%);
+            position: relative;
+        }
+        .wood-wainscoting {
+            background-image: repeating-linear-gradient(90deg, rgba(108,88,76,0.08) 0px, rgba(108,88,76,0.08) 2px, transparent 2px, transparent 36px);
+        }
+
+        /* Cat Breathing & Idle Animations */
+        @keyframes catBreathe {
+            0%, 100% { transform: scale(1, 1) translateY(0px); }
+            50% { transform: scale(1.03, 0.97) translateY(2px); }
+        }
+        @keyframes tailWag {
+            0%, 100% { transform: rotate(-6deg); }
+            50% { transform: rotate(12deg); }
+        }
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(0.8); }
+            50% { opacity: 1; transform: translateY(-22px) scale(1.1); }
+            100% { opacity: 0; transform: translateY(-45px) scale(0.9); }
+        }
+        @keyframes steamRise {
+            0% { opacity: 0; transform: translateY(0) scaleX(1); }
+            50% { opacity: 0.6; transform: translateY(-8px) scaleX(1.2); }
+            100% { opacity: 0; transform: translateY(-16px) scaleX(0.8); }
+        }
+        @keyframes gentleBob {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+        @keyframes sunbeamPulse {
+            0%, 100% { opacity: 0.28; }
+            50% { opacity: 0.45; }
+        }
+        @keyframes wandWiggle {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-18deg); }
+            75% { transform: rotate(18deg); }
+        }
+
+        .animate-cat {
+            animation: catBreathe 3.2s ease-in-out infinite;
+            transform-origin: bottom center;
+        }
+        .animate-bob {
+            animation: gentleBob 2.6s ease-in-out infinite;
+        }
+        .animate-steam {
+            animation: steamRise 2.2s ease-in-out infinite;
+        }
+        .sunbeam {
+            background: linear-gradient(135deg, rgba(255, 251, 219, 0.65) 0%, rgba(255, 251, 219, 0) 75%);
+            animation: sunbeamPulse 5s ease-in-out infinite;
+            pointer-events: none;
+        }
+        .floating-particle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 100;
+            animation: floatUp 1.2s ease-out forwards;
+        }
+        .wand-active {
+            animation: wandWiggle 0.45s ease-in-out infinite;
+        }
+
+        /* Cozy Button Styles */
+        .btn-cozy {
+            transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 4px 0 #6C584C;
+        }
+        .btn-cozy:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #6C584C;
+        }
+        .btn-cozy:active:not(:disabled) {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #6C584C;
+        }
+        .btn-matcha {
+            box-shadow: 0 4px 0 #53643B;
+        }
+        .btn-matcha:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #53643B;
+        }
+        .btn-matcha:active:not(:disabled) {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #53643B;
+        }
+        .btn-sakura {
+            box-shadow: 0 4px 0 #C94A6A;
+        }
+        .btn-sakura:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #C94A6A;
+        }
+        .btn-sakura:active:not(:disabled) {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #C94A6A;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F5EBE0;
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D5BDAF;
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #A98467;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between bg-[#EFE5DC]">
+
+    <!-- TOP NAVIGATION & CURRENCY BAR -->
+    <header class="sticky top-0 z-40 bg-[#FFFDF7]/95 backdrop-blur-md border-b-4 border-[#D5BDAF] shadow-sm px-3 py-2.5">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+            <!-- Cafe Brand Title -->
+            <div class="flex items-center gap-2.5">
+                <div class="w-11 h-11 rounded-2xl bg-[#ADC178] border-2 border-[#6C584C] flex items-center justify-center shadow-inner text-2xl">
+                    🐾
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-xl sm:text-2xl font-bold text-[#6C584C] tracking-tight leading-none">Komorebi Cat Cafe</h1>
+                        <span id="cafeRankBadge" class="text-xs font-bold px-2 py-0.5 rounded-full bg-[#FFE5EC] text-[#C94A6A] border border-[#FFB3C6]">Lv. 1 Cozy Corner</span>
+                    </div>
+                    <p class="text-xs text-[#8D7768] font-medium hidden sm:block">Sip matcha, pet stray kitties & collect rare visitors</p>
+                </div>
+            </div>
+
+            <!-- Stats & Currency Pills -->
+            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+                <!-- Coins -->
+                <div class="flex items-center gap-2 bg-[#FFF8E7] border-2 border-[#E2C290] px-3 py-1.5 rounded-2xl shadow-sm">
+                    <span class="text-lg">🪙</span>
+                    <div>
+                        <div class="text-[10px] uppercase tracking-wider font-bold text-[#9C7A44] leading-none">Cafe Coins</div>
+                        <div class="font-heading font-bold text-base sm:text-lg text-[#6C584C] leading-tight">
+                            <span id="coinDisplay">120</span>
+                            <span id="coinRateDisplay" class="text-xs font-normal text-[#8D7768] ml-0.5">(+0/s)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Purr Points -->
+                <div class="flex items-center gap-2 bg-[#FFE5EC] border-2 border-[#FFB3C6] px-3 py-1.5 rounded-2xl shadow-sm">
+                    <span class="text-lg">💖</span>
+                    <div>
+                        <div class="text-[10px] uppercase tracking-wider font-bold text-[#C94A6A] leading-none">Purr Love</div>
+                        <div class="font-heading font-bold text-base sm:text-lg text-[#6C584C] leading-tight">
+                            <span id="purrDisplay">25</span>
+                            <span id="purrRateDisplay" class="text-xs font-normal text-[#C94A6A] ml-0.5">(+1/s)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cats Discovered -->
+                <div class="hidden md:flex items-center gap-2 bg-[#E9F5DB] border-2 border-[#ADC178] px-3 py-1.5 rounded-2xl shadow-sm">
+                    <span class="text-lg">🐱</span>
+                    <div>
+                        <div class="text-[10px] uppercase tracking-wider font-bold text-[#53643B] leading-none">Neko Book</div>
+                        <div id="catCountDisplay" class="font-heading font-bold text-base text-[#53643B] leading-tight">1 / 8</div>
+                    </div>
+                </div>
+
+                <!-- Utility Controls -->
+                <div class="flex items-center gap-1.5">
+                    <button id="soundToggleBtn" onclick="toggleSound()" title="Toggle Cozy Audio" class="w-10 h-10 rounded-xl bg-[#F5EBE0] hover:bg-[#E6D5C3] border-2 border-[#6C584C] flex items-center justify-center text-[#6C584C] btn-cozy">
+                        <i id="soundIcon" class="fas fa-volume-up"></i>
+                    </button>
+                    <button onclick="openSettingsModal()" title="Save / Game Options" class="w-10 h-10 rounded-xl bg-[#F5EBE0] hover:bg-[#E6D5C3] border-2 border-[#6C584C] flex items-center justify-center text-[#6C584C] btn-cozy">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-4 py-4 grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+
+        <!-- LEFT / CENTER COLUMN: INTERACTIVE CAFE ROOM & CUSTOMER COUNTER (7 Cols on Desktop) -->
+        <section class="lg:col-span-7 flex flex-col gap-4">
+
+            <!-- CAFE INTERACTIVE FLOOR -->
+            <div class="bg-[#FFFDF7] rounded-3xl border-4 border-[#6C584C] shadow-lg overflow-hidden relative">
+                
+                <!-- Top Cafe Banner / Status Bar -->
+                <div class="bg-[#6C584C] text-[#FFFDF7] px-4 py-2 flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm">
+                    <div class="flex items-center gap-2">
+                        <span class="inline-block w-2.5 h-2.5 rounded-full bg-[#ADC178] animate-pulse"></span>
+                        <span id="cafeAmbienceText" class="font-medium">Sunlight streams through the leaves... Click cats to pet them!</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span id="featherBuffBadge" class="hidden bg-[#FFB3C6] text-[#6C584C] font-bold px-2.5 py-0.5 rounded-full text-xs animate-bounce">
+                            🪶 Play Frenzy x2 Purrs! (<span id="featherTimer">15</span>s)
+                        </span>
+                        <span class="text-[#E6D5C3] font-semibold">Treat Bowl: <strong id="bowlPercentText" class="text-white">80%</strong></span>
+                    </div>
+                </div>
+
+                <!-- THE VISUAL CAFE ROOM -->
+                <div id="cafeFloor" class="cafe-wall wood-wainscoting min-h-[390px] sm:min-h-[430px] p-4 flex flex-col justify-between relative overflow-hidden">
+                    
+                    <!-- Decorative Sunbeam & Hanging Plants -->
+                    <div class="sunbeam absolute -top-10 left-10 w-72 h-96 transform -rotate-12"></div>
+                    
+                    <!-- Decorative Top Café Wall Details (Hanging Ivy, Menu Board, Window) -->
+                    <div class="relative z-10 flex justify-between items-start pointer-events-none select-none mb-2">
+                        <!-- Hanging Plant Left -->
+                        <div class="bg-[#E9F5DB]/90 border-2 border-[#718355] rounded-2xl px-3 py-1.5 shadow-sm flex items-center gap-2">
+                            <span class="text-xl">🌿</span>
+                            <div class="text-[11px] text-[#53643B] font-bold leading-tight">
+                                <div>Monstera & Ivy</div>
+                                <div class="text-[10px] font-normal">Cozy Vibe +10%</div>
+                            </div>
+                        </div>
+
+                        <!-- Chalkboard Daily Special Sign -->
+                        <div class="bg-[#3D403A] border-4 border-[#A98467] rounded-xl px-4 py-1.5 text-center shadow-md hidden sm:block">
+                            <div class="text-[10px] uppercase tracking-widest text-[#ADC178] font-bold">Today's Special</div>
+                            <div id="chalkboardSpecial" class="text-xs font-heading text-[#FFFDF7]">🍵 Uji Matcha & Warm Purrs</div>
+                        </div>
+
+                        <!-- Fairy Lights Right -->
+                        <div class="bg-[#FFF8E7]/90 border-2 border-[#E2C290] rounded-2xl px-3 py-1.5 shadow-sm flex items-center gap-2">
+                            <span class="text-xl">✨</span>
+                            <div class="text-[11px] text-[#9C7A44] font-bold leading-tight">
+                                <div>Lo-Fi & Warmth</div>
+                                <div id="activeCatCountLabel" class="text-[10px] font-normal">1 Kitty Lounging</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FURNITURE & CAT SPOTS GRID (6 Interactive Spots) -->
+                    <div id="furnitureGrid" class="relative z-20 grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 my-auto py-2">
+                        <!-- Dynamically populated by JS -->
+                    </div>
+
+                    <!-- CAFE FLOOR BOTTOM INTERACTIVE CARE BAR (Treat Bowl & Feather Wand) -->
+                    <div class="relative z-20 mt-3 pt-2.5 border-t-2 border-[#6C584C]/20 flex flex-wrap items-center justify-between gap-2 bg-[#FFFDF7]/90 backdrop-blur-sm px-3 py-2 rounded-2xl border-2 border-[#D5BDAF]">
+                        <!-- Treat Bowl Widget -->
+                        <div class="flex items-center gap-3 flex-1 min-w-[210px]">
+                            <div class="relative w-11 h-11 rounded-2xl bg-[#FFE5EC] border-2 border-[#6C584C] flex items-center justify-center text-2xl shadow-inner">
+                                🥣
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex justify-between text-xs font-bold mb-1">
+                                    <span class="text-[#6C584C]">🐟 Bonito Flake Bowl</span>
+                                    <span id="bowlStatusLabel" class="text-[#718355]">Full & Yummy!</span>
+                                </div>
+                                <div class="w-full h-3 bg-[#E6D5C3] rounded-full overflow-hidden border border-[#6C584C]/40">
+                                    <div id="bowlProgressBar" class="h-full bg-gradient-to-r from-[#F4A261] to-[#ADC178] transition-all duration-300" style="width: 80%"></div>
+                                </div>
+                            </div>
+                            <button onclick="refillTreatBowl(event)" id="refillBowlBtn" class="px-3 py-1.5 rounded-xl bg-[#ADC178] hover:bg-[#9BB065] text-[#FFFDF7] font-heading font-semibold text-xs border-2 border-[#53643B] btn-matcha shrink-0">
+                                Refill (15 🪙)
+                            </button>
+                        </div>
+
+                        <!-- Feather Wand Toy Action -->
+                        <div class="flex items-center gap-2">
+                            <button onclick="activateFeatherWand(event)" id="featherWandBtn" class="px-3.5 py-1.5 rounded-xl bg-[#FFB3C6] hover:bg-[#FF9EB5] text-[#6C584C] font-heading font-semibold text-xs border-2 border-[#C94A6A] btn-sakura flex items-center gap-1.5">
+                                <span id="wandEmoji" class="text-base">🪶</span>
+                                <span>Wave Feather Wand (20 💖)</span>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- EXPRESSO & PASTRY CUSTOMER COUNTER -->
+            <div class="bg-[#FFFDF7] rounded-3xl border-4 border-[#6C584C] shadow-lg p-4">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl">☕</span>
+                        <div>
+                            <h2 class="text-lg font-bold text-[#6C584C] leading-none">Sweet Paws Counter</h2>
+                            <p class="text-xs text-[#8D7768]">Click customer orders to brew & serve for fast Coins + Purr Tips!</p>
+                        </div>
+                    </div>
+
+                    <!-- Auto Barista Status Indicator -->
+                    <div class="flex items-center gap-2 bg-[#F5EBE0] px-3 py-1.5 rounded-2xl border-2 border-[#D5BDAF]">
+                        <span class="text-base">🧑‍🍳</span>
+                        <div class="text-xs">
+                            <span class="font-bold text-[#6C584C]">Helper Barista:</span>
+                            <span id="baristaStatusText" class="text-[#718355] font-semibold ml-1">Not Hired Yet</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3 Customer Order Slots -->
+                <div id="customerSlotsGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+
+        </section>
+
+        <!-- RIGHT COLUMN: MANAGEMENT TABS (SHOP, MENU, NEKO BOOK, LOG) (5 Cols on Desktop) -->
+        <aside class="lg:col-span-5 bg-[#FFFDF7] rounded-3xl border-4 border-[#6C584C] shadow-lg flex flex-col overflow-hidden h-[640px]">
+            
+            <!-- Tab Buttons -->
+            <div class="grid grid-cols-3 bg-[#F5EBE0] border-b-4 border-[#6C584C] p-1.5 gap-1.5">
+                <button onclick="switchTab('decor')" id="tabBtn-decor" class="tab-btn py-2 px-2 rounded-2xl font-heading font-semibold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all bg-[#ADC178] text-[#FFFDF7] border-2 border-[#53643B] shadow-sm">
+                    <span>🪴</span>
+                    <span>Cat Decor</span>
+                </button>
+                <button onclick="switchTab('kitchen')" id="tabBtn-kitchen" class="tab-btn py-2 px-2 rounded-2xl font-heading font-semibold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all text-[#6C584C] hover:bg-[#E6D5C3]">
+                    <span>🍰</span>
+                    <span>Cafe Menu</span>
+                </button>
+                <button onclick="switchTab('nekobook')" id="tabBtn-nekobook" class="tab-btn py-2 px-2 rounded-2xl font-heading font-semibold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all text-[#6C584C] hover:bg-[#E6D5C3] relative">
+                    <span>📖</span>
+                    <span>Neko Book</span>
+                    <span id="nekoNewDot" class="hidden w-2.5 h-2.5 rounded-full bg-[#FB6F92] border border-white animate-ping absolute top-1.5 right-2"></span>
+                </button>
+            </div>
+
+            <!-- Tab Content Area (Scrollable) -->
+            <div class="flex-1 overflow-y-auto p-4 space-y-3">
+                
+                <!-- TAB 1: CAFE FURNITURE & CAT DECOR -->
+                <div id="tabContent-decor" class="space-y-3">
+                    <div class="bg-[#E9F5DB] border-2 border-[#ADC178] rounded-2xl p-3 text-xs text-[#53643B] flex items-center gap-2.5">
+                        <span class="text-2xl">💡</span>
+                        <div>
+                            <strong class="block text-sm">Unlock Cozy Spots to Attract Rare Cats!</strong>
+                            Each piece of furniture gives cats a new spot to lounge and increases passive Purr Love & Coins.
+                        </div>
+                    </div>
+                    <div id="decorShopList" class="space-y-2.5">
+                        <!-- Dynamically rendered -->
+                    </div>
+                </div>
+
+                <!-- TAB 2: CAFE RECIPES & HELPER BARISTAS -->
+                <div id="tabContent-kitchen" class="hidden space-y-4">
+                    <!-- Helper Barista Upgrade Card -->
+                    <div class="bg-[#FFF8E7] border-2 border-[#E2C290] rounded-2xl p-3.5">
+                        <div class="flex items-center justify-between gap-2 mb-2">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-11 h-11 rounded-2xl bg-[#F4A261] text-white flex items-center justify-center text-2xl border-2 border-[#6C584C]">
+                                    🧋
+                                </div>
+                                <div>
+                                    <h3 class="font-heading font-bold text-[#6C584C] text-base">Auto-Barista Paws</h3>
+                                    <p id="baristaDescText" class="text-xs text-[#8D7768]">Automatically brews & serves customer orders!</p>
+                                </div>
+                            </div>
+                            <span id="baristaLevelBadge" class="text-xs font-bold px-2.5 py-1 rounded-full bg-[#F5EBE0] text-[#6C584C] border border-[#D5BDAF]">Lv. 0</span>
+                        </div>
+                        <button onclick="upgradeBarista(event)" id="upgradeBaristaBtn" class="w-full py-2 rounded-xl bg-[#F4A261] hover:bg-[#E78F49] text-white font-heading font-semibold text-sm border-2 border-[#6C584C] btn-cozy">
+                            Hire Helper Barista (80 🪙)
+                        </button>
+                    </div>
+
+                    <!-- Menu Recipes List -->
+                    <div>
+                        <h3 class="font-heading font-bold text-sm uppercase tracking-wider text-[#8D7768] mb-2 px-1">Artisan Menu Upgrades</h3>
+                        <div id="recipeShopList" class="space-y-2.5">
+                            <!-- Dynamically rendered -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: NEKO SCRAPBOOK ALBUM -->
+                <div id="tabContent-nekobook" class="hidden space-y-3">
+                    <div class="bg-[#FFE5EC] border-2 border-[#FFB3C6] rounded-2xl p-3 text-xs text-[#C94A6A] flex items-center justify-between">
+                        <div>
+                            <strong class="block text-sm">Komorebi Neko Scrapbook</strong>
+                            Pet cats in the cafe or unlock their favorite furniture to bond with all 8 cats!
+                        </div>
+                        <span id="scrapbookProgressBadge" class="font-heading font-bold text-base bg-white px-3 py-1 rounded-xl border border-[#FFB3C6]">1 / 8</span>
+                    </div>
+                    <div id="nekoBookGrid" class="grid grid-cols-1 gap-3">
+                        <!-- Dynamically rendered Cat Scrapbook Cards -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Cafe Activity Ticker Footer -->
+            <div class="bg-[#F5EBE0] border-t-2 border-[#D5BDAF] px-4 py-2 text-xs text-[#6C584C] flex items-center gap-2">
+                <span class="text-base">🔔</span>
+                <div id="activityLogText" class="truncate font-medium">Welcome to Komorebi Cat Cafe! Pet Mochi on the cushion to begin.</div>
+            </div>
+        </aside>
+
+    </main>
+
+    <!-- CAT PROFILE / CLOSE-UP INTERACTION MODAL -->
+    <div id="catModal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-[#FFFDF7] border-4 border-[#6C584C] rounded-3xl max-w-md w-full p-5 shadow-2xl relative animate-bob" style="animation-duration: 4s;">
+            <button onclick="closeCatModal()" class="absolute top-3 right-3 w-9 h-9 rounded-full bg-[#F5EBE0] hover:bg-[#FFE5EC] border-2 border-[#6C584C] text-[#6C584C] font-bold flex items-center justify-center">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <div id="catModalContent">
+                <!-- Populated dynamically when clicking a cat or Neko Book card -->
+            </div>
+        </div>
+    </div>
+
+    <!-- SETTINGS / SAVE / RESET MODAL -->
+    <div id="settingsModal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-[#FFFDF7] border-4 border-[#6C584C] rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
+            <button onclick="closeSettingsModal()" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-[#F5EBE0] border-2 border-[#6C584C] text-[#6C584C] flex items-center justify-center">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="flex items-center gap-2.5 mb-4">
+                <span class="text-2xl">🍵</span>
+                <h3 class="text-xl font-heading font-bold text-[#6C584C]">Cafe Manager Notebook</h3>
+            </div>
+            <p class="text-sm text-[#6C584C] mb-4">
+                Your cafe progress automatically saves to your browser every few seconds. You can also manually save or start a fresh cafe below!
+            </p>
+            <div class="bg-[#F5EBE0] rounded-2xl p-3.5 border-2 border-[#D5BDAF] text-xs space-y-1.5 mb-5">
+                <div class="flex justify-between"><span>Total Cats Petted:</span><strong id="statTotalPets">0</strong></div>
+                <div class="flex justify-between"><span>Total Drinks & Pastries Served:</span><strong id="statTotalServed">0</strong></div>
+                <div class="flex justify-between"><span>Cats Collected:</span><strong id="statCatsUnlocked">1 / 8</strong></div>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-2.5">
+                <button onclick="manualSave()" class="flex-1 py-2.5 rounded-xl bg-[#ADC178] text-white font-heading font-bold text-sm border-2 border-[#53643B] btn-matcha">
+                    <i class="fas fa-save mr-1"></i> Save Progress Now
+                </button>
+                <button onclick="confirmResetGame()" id="resetConfirmBtn" class="py-2.5 px-4 rounded-xl bg-[#FFE5EC] text-[#C94A6A] font-heading font-bold text-sm border-2 border-[#C94A6A] btn-sakura">
+                    <i class="fas fa-trash-alt mr-1"></i> Reset Cafe
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <script>
+        /********************************************************************
+         * 1. SYNTHESIZED COZY WEB AUDIO SOUND ENGINE (Zero External Assets)
+         ********************************************************************/
+        let audioCtx = null;
+        let soundEnabled = true;
+
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) audioCtx = new AudioContext();
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            try {
+                initAudio();
+                if (!audioCtx) return;
+                const now = audioCtx.currentTime;
+
+                if (type === 'pet') {
+                    // Cozy gentle purr + warm chime
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(520, now);
+                    osc.frequency.exponentialRampToValueAtTime(780, now + 0.16);
+                    gain.gain.setValueAtTime(0.12, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.18);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.18);
+                } else if (type === 'meow') {
+                    // Cute melodic cat meow
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(480, now);
+                    osc.frequency.exponentialRampToValueAtTime(880, now + 0.12);
+                    osc.frequency.exponentialRampToValueAtTime(620, now + 0.32);
+                    gain.gain.setValueAtTime(0.14, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.34);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.35);
+                } else if (type === 'coin') {
+                    // Crisp two-tone coin clink
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(987.77, now); // B5
+                    osc.frequency.setValueAtTime(1318.51, now + 0.07); // E6
+                    gain.gain.setValueAtTime(0.12, now);
+                    gain.gain.exponentialRampToValueAtTime(0.008, now + 0.25);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.26);
+                } else if (type === 'unlock') {
+                    // Happy arpeggio fanfare
+                    const notes = [523.25, 659.25, 783.99, 1046.50];
+                    notes.forEach((freq, idx) => {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+                        gain.gain.setValueAtTime(0.13, now + idx * 0.08);
+                        gain.gain.exponentialRampToValueAtTime(0.008, now + idx * 0.08 + 0.28);
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.start(now + idx * 0.08);
+                        osc.stop(now + idx * 0.08 + 0.29);
+                    });
+                }
+            } catch (e) {
+                // Ignore audio errors if browser blocks autoplay
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const icon = document.getElementById('soundIcon');
+            icon.className = soundEnabled ? 'fas fa-volume-up' : 'fas fa-volume-mute text-[#C94A6A]';
+            if (soundEnabled) playSound('pet');
+        }
+
+        /********************************************************************
+         * 2. CAT DATABASE & CUSTOM KAWAII SVG GENERATOR (8 Unique Cats)
+         ********************************************************************/
+        const CAT_DATABASE = [
+            {
+                id: 'mochi',
+                name: 'Mochi',
+                title: 'The Sweet Calico',
+                breed: 'Calico Shorthair',
+                RequiredDecor: 'cushion',
+                snack: 'Strawberry Daifuku',
+                quirk: 'Kneads velvet pillows like a tiny master baker.',
+                basePurr: 2,
+                baseCoin: 1,
+                palette: { body: '#FFF8EC', earL: '#F4A261', earR: '#6C584C', patch1: '#F4A261', patch2: '#6C584C', cheeks: '#FFB3C6', eyes: '#4A3B32', accessory: 'sakura' }
+            },
+            {
+                id: 'bento',
+                name: 'Bento',
+                title: 'The Dapper Gentleman',
+                breed: 'Tuxedo Cat',
+                RequiredDecor: 'window',
+                snack: 'Steamed Bonito Flakes',
+                quirk: 'Inspects every espresso shot with polite judgment.',
+                basePurr: 3,
+                baseCoin: 3,
+                palette: { body: '#3A3A3C', earL: '#2C2C2E', earR: '#2C2C2E', patch1: '#FFFFFF', patch2: '#3A3A3C', cheeks: '#FFB3C6', eyes: '#F4A261', accessory: 'bowtie' }
+            },
+            {
+                id: 'yuzu',
+                name: 'Yuzu',
+                title: 'The Marmalade Loaf',
+                breed: 'Orange Ginger Tabby',
+                RequiredDecor: 'cattree',
+                snack: 'Warm Taiyaki Crust',
+                quirk: 'Shares one single braincell with the café toaster.',
+                basePurr: 5,
+                baseCoin: 4,
+                palette: { body: '#F4A261', earL: '#E76F51', earR: '#E76F51', patch1: '#E76F51', patch2: '#FFF3E0', cheeks: '#FF8FA3', eyes: '#4A3B32', accessory: 'citrus' }
+            },
+            {
+                id: 'kiki',
+                name: 'Kiki',
+                title: 'The Midnight Familiar',
+                breed: 'Bombay Void Cat',
+                RequiredDecor: 'bookshelf',
+                snack: 'Dark Chocolate Macaron Crumb',
+                quirk: 'Looks like a shadowy pillow until she blinks golden eyes.',
+                basePurr: 7,
+                baseCoin: 6,
+                palette: { body: '#232023', earL: '#161416', earR: '#161416', patch1: '#232023', patch2: '#232023', cheeks: '#FB6F92', eyes: '#FFD166', accessory: 'ribbon' }
+            },
+            {
+                id: 'sakura',
+                name: 'Sakura',
+                title: 'The Cloud Princess',
+                breed: 'Cream Scottish Fold',
+                RequiredDecor: 'kotatsu',
+                snack: 'Whipped Sweet Milk Foam',
+                quirk: 'Purrs so loudly she vibrates nearby teacups.',
+                basePurr: 10,
+                baseCoin: 8,
+                palette: { body: '#FFE5EC', earL: '#FFB3C6', earR: '#FFB3C6', patch1: '#FFFDF7', patch2: '#FFB3C6', cheeks: '#FB6F92', eyes: '#6C584C', accessory: 'pearl' }
+            },
+            {
+                id: 'matcha',
+                name: 'Matcha',
+                title: 'The Nap Emperor',
+                breed: 'British Shorthair',
+                RequiredDecor: 'planter',
+                snack: 'Matcha Butter Cookie',
+                quirk: 'Only wakes up when he hears the milk steamer.',
+                basePurr: 14,
+                baseCoin: 12,
+                palette: { body: '#94A89A', earL: '#6B7F71', earR: '#6B7F71', patch1: '#B7C9BC', patch2: '#94A89A', cheeks: '#FFB3C6', eyes: '#53643B', accessory: 'leaf' }
+            },
+            {
+                id: 'hoshi',
+                name: 'Hoshi',
+                title: 'The Starry Daydreamer',
+                breed: 'Siamese Point',
+                RequiredDecor: 'bookshelf',
+                snack: 'Honey Castella Cake',
+                quirk: 'Watches raindrops race down the cafe windowpane.',
+                basePurr: 18,
+                baseCoin: 15,
+                palette: { body: '#F5EBE0', earL: '#6C584C', earR: '#6C584C', patch1: '#6C584C', patch2: '#D5BDAF', cheeks: '#FFB3C6', eyes: '#4EA8DE', accessory: 'star' }
+            },
+            {
+                id: 'lotus',
+                name: 'Lotus',
+                title: 'The Zen Guardian',
+                breed: 'Mystic Golden Bobtail',
+                RequiredDecor: 'planter',
+                snack: 'Golden Creme Brulee',
+                quirk: 'Brings good fortune and extra generous customer tips!',
+                basePurr: 25,
+                baseCoin: 22,
+                palette: { body: '#FFE8A3', earL: '#E09F3E', earR: '#E09F3E', patch1: '#FFFDF7', patch2: '#E09F3E', cheeks: '#FB6F92', eyes: '#718355', accessory: 'lotus' }
+            }
+        ];
+
+        // Renders an expressive, adorable custom SVG illustration for each cat
+        function getCatSVG(cat, pose = 'awake', sizeClass = 'w-24 h-24') {
+            const p = cat.palette;
+            const isSleeping = pose === 'sleep';
+            const isHappy = pose === 'happy';
+
+            // Accessory SVG overlay
+            let accessorySVG = '';
+            if (p.accessory === 'sakura') {
+                accessorySVG = `<g transform="translate(68, 22)">
+                    <circle cx="0" cy="0" r="7" fill="#FFB3C6" stroke="#6C584C" stroke-width="2"/>
+                    <circle cx="0" cy="0" r="2.5" fill="#FFD166"/>
+                </g>`;
+            } else if (p.accessory === 'bowtie') {
+                accessorySVG = `<g transform="translate(50, 74)">
+                    <polygon points="-10,-5 0,0 -10,5" fill="#FB6F92" stroke="#6C584C" stroke-width="1.8"/>
+                    <polygon points="10,-5 0,0 10,5" fill="#FB6F92" stroke="#6C584C" stroke-width="1.8"/>
+                    <circle cx="0" cy="0" r="3" fill="#FFD166" stroke="#6C584C" stroke-width="1.5"/>
+                </g>`;
+            } else if (p.accessory === 'citrus') {
+                accessorySVG = `<g transform="translate(50, 18)">
+                    <ellipse cx="0" cy="0" rx="8" ry="5" fill="#FFD166" stroke="#6C584C" stroke-width="2"/>
+                    <path d="M0,-5 Q5,-10 8,-6" stroke="#718355" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                </g>`;
+            } else if (p.accessory === 'ribbon') {
+                accessorySVG = `<g transform="translate(28, 24) rotate(-20)">
+                    <ellipse cx="-5" cy="0" rx="5" ry="3.5" fill="#FB6F92"/>
+                    <ellipse cx="5" cy="0" rx="5" ry="3.5" fill="#FB6F92"/>
+                    <circle cx="0" cy="0" r="2.5" fill="#FFFDF7"/>
+                </g>`;
+            } else if (p.accessory === 'leaf') {
+                accessorySVG = `<g transform="translate(52, 16) rotate(12)">
+                    <path d="M0,4 Q-8,-6 0,-10 Q8,-6 0,4 Z" fill="#ADC178" stroke="#53643B" stroke-width="2"/>
+                </g>`;
+            } else if (p.accessory === 'star') {
+                accessorySVG = `<g transform="translate(50, 75)">
+                    <circle cx="0" cy="0" r="5" fill="#FFD166" stroke="#6C584C" stroke-width="1.8"/>
+                </g>`;
+            } else if (p.accessory === 'lotus') {
+                accessorySVG = `<g transform="translate(50, 17)">
+                    <path d="M-8,2 Q0,-10 8,2 Z" fill="#FFB3C6" stroke="#6C584C" stroke-width="1.8"/>
+                    <path d="M-4,2 Q0,-12 4,2 Z" fill="#FFE5EC" stroke="#6C584C" stroke-width="1.5"/>
+                </g>`;
+            } else if (p.accessory === 'pearl') {
+                accessorySVG = `<g transform="translate(50, 74)">
+                    <circle cx="-8" cy="-1" r="2.5" fill="#FFFDF7" stroke="#6C584C" stroke-width="1.2"/>
+                    <circle cx="-3" cy="1" r="2.5" fill="#FFFDF7" stroke="#6C584C" stroke-width="1.2"/>
+                    <circle cx="3" cy="1" r="2.5" fill="#FFFDF7" stroke="#6C584C" stroke-width="1.2"/>
+                    <circle cx="8" cy="-1" r="2.5" fill="#FFFDF7" stroke="#6C584C" stroke-width="1.2"/>
+                </g>`;
+            }
+
+            // Eyes SVG based on pose
+            let eyesSVG = '';
+            if (isSleeping) {
+                eyesSVG = `
+                    <path d="M33,47 Q38,52 43,47" stroke="#4A3B32" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+                    <path d="M57,47 Q62,52 67,47" stroke="#4A3B32" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+                `;
+            } else if (isHappy) {
+                eyesSVG = `
+                    <path d="M33,48 Q38,41 43,48" stroke="#4A3B32" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+                    <path d="M57,48 Q62,41 67,48" stroke="#4A3B32" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+                `;
+            } else {
+                eyesSVG = `
+                    <circle cx="37" cy="46" r="4.8" fill="${p.eyes}"/>
+                    <circle cx="35.5" cy="44.2" r="1.7" fill="#FFFFFF"/>
+                    <circle cx="63" cy="46" r="4.8" fill="${p.eyes}"/>
+                    <circle cx="61.5" cy="44.2" r="1.7" fill="#FFFFFF"/>
+                `;
+            }
+
+            return `
+            <svg viewBox="0 0 100 95" class="${sizeClass} overflow-visible select-none">
+                <!-- Drop Shadow -->
+                <ellipse cx="50" cy="87" rx="34" ry="6" fill="rgba(108,88,76,0.22)"/>
+                <!-- Wagging Tail -->
+                <path d="M76,75 Q93,65 89,50" stroke="${p.earR}" stroke-width="8" stroke-linecap="round" fill="none"/>
+                <!-- Rounded Loaf Body -->
+                <path d="M20,76 C18,52 30,38 50,38 C70,38 82,52 80,76 C80,84 70,86 50,86 C30,86 20,84 20,76 Z" fill="${p.body}" stroke="#4A3B32" stroke-width="3"/>
+                <!-- Belly / Chest Patch -->
+                <ellipse cx="50" cy="70" rx="18" ry="13" fill="${p.patch1}" opacity="0.85"/>
+                <!-- Left Ear -->
+                <polygon points="24,36 20,14 40,24" fill="${p.earL}" stroke="#4A3B32" stroke-width="3" stroke-linejoin="round"/>
+                <!-- Right Ear -->
+                <polygon points="76,36 80,14 60,24" fill="${p.earR}" stroke="#4A3B32" stroke-width="3" stroke-linejoin="round"/>
+                <!-- Cute Head -->
+                <ellipse cx="50" cy="45" rx="28" ry="23" fill="${p.body}" stroke="#4A3B32" stroke-width="3"/>
+                <!-- Forehead Patch / Stripes -->
+                <path d="M40,24 Q50,35 60,24" fill="${p.patch2}" opacity="0.75"/>
+                <!-- Rosy Cheeks -->
+                <ellipse cx="29" cy="52" rx="4.5" ry="2.8" fill="${p.cheeks}"/>
+                <ellipse cx="71" cy="52" rx="4.5" ry="2.8" fill="${p.cheeks}"/>
+                <!-- Eyes -->
+                ${eyesSVG}
+                <!-- Cute 'w' Mouth & Nose -->
+                <polygon points="48,50 52,50 50,53" fill="#FB6F92"/>
+                <path d="M44,55 Q47,58 50,54 Q53,58 56,55" stroke="#4A3B32" stroke-width="2.3" fill="none" stroke-linecap="round"/>
+                <!-- Tiny Paws -->
+                <ellipse cx="36" cy="84" rx="6.5" ry="4" fill="#FFFDF7" stroke="#4A3B32" stroke-width="2.5"/>
+                <ellipse cx="64" cy="84" rx="6.5" ry="4" fill="#FFFDF7" stroke="#4A3B32" stroke-width="2.5"/>
+                <!-- Signature Accessory -->
+                ${accessorySVG}
+            </svg>`;
+        }
+
+        /********************************************************************
+         * 3. FURNITURE SPOTS & MENU RECIPE DEFINITIONS
+         ********************************************************************/
+        const DECOR_SPOTS = [
+            {
+                id: 'cushion',
+                name: 'Velvet Tatami Cushion',
+                icon: '🛋️',
+                desc: 'A warm, sun-drenched floor cushion for sleepy kittens.',
+                baseCost: 0,
+                costCurrency: 'coins',
+                passivePurr: 1,
+                passiveCoin: 1,
+                attracts: ['mochi']
+            },
+            {
+                id: 'window',
+                name: 'Sunny Bay Window Perch',
+                icon: '🪟',
+                desc: 'Basking spot overlooking the cobblestone street.',
+                baseCost: 60,
+                costCurrency: 'coins',
+                passivePurr: 3,
+                passiveCoin: 2,
+                attracts: ['bento']
+            },
+            {
+                id: 'cattree',
+                name: 'Oakwood Cat Condo',
+                icon: '🪵',
+                desc: 'Multi-level sisal scratching tower with a hammock.',
+                baseCost: 160,
+                costCurrency: 'coins',
+                passivePurr: 6,
+                passiveCoin: 5,
+                attracts: ['yuzu']
+            },
+            {
+                id: 'bookshelf',
+                name: 'Manga & Poetry Nook',
+                icon: '📚',
+                desc: 'Cozy wooden shelves where curious cats hide above books.',
+                baseCost: 350,
+                costCurrency: 'coins',
+                passivePurr: 11,
+                passiveCoin: 9,
+                attracts: ['kiki', 'hoshi']
+            },
+            {
+                id: 'kotatsu',
+                name: 'Sakura Heated Kotatsu',
+                icon: '🌸',
+                desc: 'A quilted low table with a gentle heater underneath.',
+                baseCost: 750,
+                costCurrency: 'coins',
+                passivePurr: 18,
+                passiveCoin: 15,
+                attracts: ['sakura']
+            },
+            {
+                id: 'planter',
+                name: 'Zen Lotus & Bamboo Fountain',
+                icon: '🪷',
+                desc: 'Trickling bamboo water feature that attracts legendary cats.',
+                baseCost: 1400,
+                costCurrency: 'coins',
+                passivePurr: 30,
+                passiveCoin: 25,
+                attracts: ['matcha', 'lotus']
+            }
+        ];
+
+        const MENU_RECIPES = [
+            { id: 'matcha_latte', name: 'Uji Matcha Latte', icon: '🍵', basePrice: 14, upgradeCost: 45, desc: 'Whisked ceremonial green tea with oat milk.' },
+            { id: 'sakura_macaron', name: 'Sakura Blossom Macaron', icon: '🌸', basePrice: 20, upgradeCost: 90, desc: 'Crisp almond shells with cherry blossom cream.' },
+            { id: 'cat_espresso', name: 'Neko Latte Art Espresso', icon: '☕', basePrice: 28, upgradeCost: 180, desc: 'Rich espresso topped with a 3D foam kitty.' },
+            { id: 'taiyaki', name: 'Custard Taiyaki Waffle', icon: '鲷', displayIcon: '🥐', basePrice: 38, upgradeCost: 340, desc: 'Warm fish-shaped pastry filled with vanilla bean.' },
+            { id: 'shortcake', name: 'Strawberry Cloud Cake', icon: '🍰', basePrice: 55, upgradeCost: 650, desc: 'Fluffy sponge cake layered with sweet berries.' }
+        ];
+
+        const CUSTOMER_NAMES = [
+            { name: 'Hana', avatar: '👩‍🎨', vibe: 'Sketching cats in her notebook' },
+            { name: 'Kenji', avatar: '🧑‍💻', vibe: 'Working remotely with a latte' },
+            { name: 'Mei', avatar: '👧', vibe: 'Hoping to pet a fluffy kitten' },
+            { name: 'Sora', avatar: '🧑‍🎓', vibe: 'Reading poetry on a rainy break' },
+            { name: 'Yuki', avatar: '👵', vibe: 'Brought extra smiles for the cats' },
+            { name: 'Ren', avatar: '🧑‍🍳', vibe: 'Admiring the pastry display' }
+        ];
+
+        /********************************************************************
+         * 4. GAME STATE & INITIALIZATION
+         ********************************************************************/
+        const DEFAULT_STATE = {
+            coins: 120,
+            purrs: 25,
+            treatBowl: 85, // 0 to 100
+            featherBuffSeconds: 0,
+            baristaLevel: 0,
+            totalPets: 0,
+            totalServed: 0,
+            decorLevels: {
+                cushion: 1,
+                window: 0,
+                cattree: 0,
+                bookshelf: 0,
+                kotatsu: 0,
+                planter: 0
+            },
+            recipeLevels: {
+                matcha_latte: 1,
+                sakura_macaron: 1,
+                cat_espresso: 0,
+                taiyaki: 0,
+                shortcake: 0
+            },
+            cats: {
+                mochi: { unlocked: true, affection: 1, pets: 0, pose: 'awake' },
+                bento: { unlocked: false, affection: 0, pets: 0, pose: 'awake' },
+                yuzu: { unlocked: false, affection: 0, pets: 0, pose: 'sleep' },
+                kiki: { unlocked: false, affection: 0, pets: 0, pose: 'awake' },
+                sakura: { unlocked: false, affection: 0, pets: 0, pose: 'sleep' },
+                matcha: { unlocked: false, affection: 0, pets: 0, pose: 'sleep' },
+                hoshi: { unlocked: false, affection: 0, pets: 0, pose: 'awake' },
+                lotus: { unlocked: false, affection: 0, pets: 0, pose: 'awake' }
+            }
+        };
+
+        let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+        let activeCustomers = [null, null, null];
+        let spotAssignments = {}; // maps decorId -> catId currently lounging there
+        let currentTab = 'decor';
+        let baristaCooldown = 0;
+
+        function loadGame() {
+            try {
+                const saved = localStorage.getItem('komorebi_cat_cafe_v1');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    state = {
+                        ...DEFAULT_STATE,
+                        ...parsed,
+                        decorLevels: { ...DEFAULT_STATE.decorLevels, ...(parsed.decorLevels || {}) },
+                        recipeLevels: { ...DEFAULT_STATE.recipeLevels, ...(parsed.recipeLevels || {}) },
+                        cats: { ...DEFAULT_STATE.cats, ...(parsed.cats || {}) }
+                    };
+                }
+            } catch (e) {
+                console.warn('Could not load saved cafe:', e);
+            }
+            refreshCatPlacements();
+            spawnInitialCustomers();
+            updateAllUI();
+        }
+
+        function saveGame() {
+            try {
+                localStorage.setItem('komorebi_cat_cafe_v1', JSON.stringify(state));
+            } catch (e) {
+                console.warn('Could not save cafe state:', e);
+            }
+        }
+
+        /********************************************************************
+         * 5. CORE CAFE FLOOR & CAT PLACEMENT LOGIC
+         ********************************************************************/
+        function refreshCatPlacements() {
+            const unlockedCats = CAT_DATABASE.filter(c => state.cats[c.id]?.unlocked);
+            DECOR_SPOTS.forEach(spot => {
+                if (state.decorLevels[spot.id] > 0) {
+                    // Check if current cat is still valid, or assign an unlocked cat
+                    const preferred = unlockedCats.filter(c => c.RequiredDecor === spot.id);
+                    const currentCatId = spotAssignments[spot.id];
+                    if (!currentCatId || !state.cats[currentCatId]?.unlocked) {
+                        if (preferred.length > 0) {
+                            spotAssignments[spot.id] = preferred[Math.floor(Math.random() * preferred.length)].id;
+                        } else if (unlockedCats.length > 0) {
+                            spotAssignments[spot.id] = unlockedCats[Math.floor(Math.random() * unlockedCats.length)].id;
+                        }
+                    }
+                } else {
+                    delete spotAssignments[spot.id];
+                }
+            });
+        }
+
+        // Occasionally shuffle cats or poses so the cafe feels alive
+        function cycleCatPosesAndSpots() {
+            const unlockedCats = CAT_DATABASE.filter(c => state.cats[c.id]?.unlocked);
+            unlockedCats.forEach(c => {
+                if (Math.random() < 0.35) {
+                    const poses = ['awake', 'sleep', 'happy'];
+                    state.cats[c.id].pose = poses[Math.floor(Math.random() * poses.length)];
+                }
+            });
+
+            // Make sure every unlocked spot has a unique cat if possible
+            const usedCats = new Set();
+            DECOR_SPOTS.forEach(spot => {
+                if (state.decorLevels[spot.id] > 0) {
+                    let candidates = unlockedCats.filter(c => c.RequiredDecor === spot.id && !usedCats.has(c.id));
+                    if (candidates.length === 0) {
+                        candidates = unlockedCats.filter(c => !usedCats.has(c.id));
+                    }
+                    if (candidates.length > 0) {
+                        const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+                        spotAssignments[spot.id] = chosen.id;
+                        usedCats.add(chosen.id);
+                    }
+                }
+            });
+            renderCafeFloor();
+        }
+
+        function renderCafeFloor() {
+            const grid = document.getElementById('furnitureGrid');
+            grid.innerHTML = '';
+
+            let activeCatsCount = 0;
+
+            DECOR_SPOTS.forEach(spot => {
+                const level = state.decorLevels[spot.id] || 0;
+                const isUnlocked = level > 0;
+                const assignedCatId = spotAssignments[spot.id];
+                const catObj = assignedCatId ? CAT_DATABASE.find(c => c.id === assignedCatId) : null;
+
+                if (isUnlocked && catObj) activeCatsCount++;
+
+                const card = document.createElement('div');
+                if (!isUnlocked) {
+                    // Locked Furniture Spot
+                    card.className = 'rounded-2xl border-2 border-dashed border-[#A98467]/60 bg-[#FFFDF7]/55 p-3 flex flex-col items-center justify-center min-h-[135px] text-center transition hover:bg-[#FFFDF7]/80 cursor-pointer';
+                    card.onclick = () => {
+                        switchTab('decor');
+                        showToast(`Unlock ${spot.name} in the Cat Decor tab!`, '🪴');
+                    };
+                    card.innerHTML = `
+                        <div class="text-2xl opacity-50 mb-1">${spot.icon}</div>
+                        <div class="font-heading font-semibold text-xs text-[#6C584C]">${spot.name}</div>
+                        <div class="text-[11px] text-[#8D7768] mt-1 bg-[#F5EBE0] px-2.5 py-0.5 rounded-full border border-[#D5BDAF]">
+                            🔒 Unlock (${spot.baseCost} 🪙)
+                        </div>
+                    `;
+                } else {
+                    // Unlocked Furniture Spot with Interactive Cat
+                    const catState = catObj ? state.cats[catObj.id] : null;
+                    const pose = catState ? catState.pose : 'awake';
+                    const statusBadge = pose === 'sleep' ? '💤 Napping' : (pose === 'happy' ? '🎶 Purring' : '✨ Vibing');
+
+                    card.className = 'rounded-2xl border-2 border-[#6C584C] bg-[#FFFDF7]/90 shadow-md p-2.5 flex flex-col justify-between min-h-[140px] relative group hover:border-[#ADC178] transition-all';
+                    card.innerHTML = `
+                        <!-- Top Spot Label -->
+                        <div class="flex items-center justify-between text-[11px] z-10">
+                            <span class="font-bold text-[#6C584C] bg-[#F5EBE0] px-2 py-0.5 rounded-lg border border-[#D5BDAF] truncate">
+                                ${spot.icon} ${spot.name} <span class="text-[#718355]">Lv.${level}</span>
+                            </span>
+                            ${catObj ? `<button onclick="openCatModal('${catObj.id}', event)" title="Inspect ${catObj.name}" class="w-6 h-6 rounded-lg bg-[#FFE5EC] hover:bg-[#FFB3C6] text-[#C94A6A] flex items-center justify-center border border-[#FFB3C6]">
+                                <i class="fas fa-search-plus text-[10px]"></i>
+                            </button>` : ''}
+                        </div>
+
+                        <!-- Center Animated Cat -->
+                        <div class="my-auto flex flex-col items-center justify-center py-1 cursor-pointer" onclick="petCatOnFloor('${catObj ? catObj.id : ''}', event)">
+                            ${catObj ? `
+                                <div class="animate-cat transform group-hover:scale-105 transition-transform">
+                                    ${getCatSVG(catObj, pose, 'w-20 h-20 sm:w-24 sm:h-24')}
+                                </div>
+                            ` : `<div class="text-xs text-[#8D7768] py-6">Waiting for a kitty...</div>`}
+                        </div>
+
+                        <!-- Bottom Cat Name & Status -->
+                        ${catObj ? `
+                        <div class="flex items-center justify-between bg-[#F5EBE0]/90 px-2.5 py-1 rounded-xl border border-[#D5BDAF] text-xs">
+                            <span class="font-heading font-bold text-[#6C584C]">${catObj.name}</span>
+                            <span class="text-[10px] font-semibold text-[#718355]">${statusBadge}</span>
+                        </div>
+                        ` : ''}
+                    `;
+                }
+                grid.appendChild(card);
+            });
+
+            document.getElementById('activeCatCountLabel').textContent = `${activeCatsCount} ${activeCatsCount === 1 ? 'Kitty' : 'Kitties'} Lounging`;
+        }
+
+        function petCatOnFloor(catId, event) {
+            if (!catId) return;
+            const cat = CAT_DATABASE.find(c => c.id === catId);
+            const catState = state.cats[catId];
+            if (!cat || !catState) return;
+
+            playSound('pet');
+            catState.pets = (catState.pets || 0) + 1;
+            catState.pose = 'happy';
+            state.totalPets++;
+
+            // Affection levels up every 10 pets
+            const newAffection = Math.min(5, 1 + Math.floor(catState.pets / 8));
+            if (newAffection > catState.affection) {
+                catState.affection = newAffection;
+                playSound('meow');
+                showToast(`${cat.name}'s affection grew to Heart Lv.${newAffection}!`, '💖');
+            }
+
+            // Calculate Purr & Coin reward
+            const buffMult = state.featherBuffSeconds > 0 ? 2 : 1;
+            const bowlBonus = state.treatBowl > 20 ? 1.25 : 1;
+            const gainedPurrs = Math.max(1, Math.round((cat.basePurr + catState.affection) * buffMult * bowlBonus));
+            const gainedCoins = Math.max(1, Math.round(cat.baseCoin * bowlBonus));
+
+            state.purrs += gainedPurrs;
+            state.coins += gainedCoins;
+
+            if (event) {
+                spawnFloatingParticle(event.clientX, event.clientY, `💖 +${gainedPurrs}  🪙 +${gainedCoins}`);
+            }
+
+            logActivity(`You petted ${cat.name}! She purred happily (+${gainedPurrs} 💖, +${gainedCoins} 🪙).`);
+            renderCafeFloor();
+            updateTopBarUI();
+        }
+
+        /********************************************************************
+         * 6. TREAT BOWL & FEATHER WAND INTERACTIONS
+         ********************************************************************/
+        function refillTreatBowl(event) {
+            if (state.treatBowl >= 98) {
+                showToast('The bonito flake bowl is already brimming!', '🐟');
+                return;
+            }
+            const cost = 15;
+            if (state.coins < cost) {
+                showToast('Need 15 Cafe Coins to refill the treat bowl!', '🪙');
+                return;
+            }
+            state.coins -= cost;
+            state.treatBowl = 100;
+            playSound('meow');
+            if (event) spawnFloatingParticle(event.clientX, event.clientY, '🐟 Bowl Full! +25% Cat Income');
+            logActivity('Refilled the Bonito Flake bowl! All cats are extra energetic.');
+            updateAllUI();
+        }
+
+        function activateFeatherWand(event) {
+            const cost = 20;
+            if (state.purrs < cost) {
+                showToast('Need 20 Purr Love 💖 to wave the Feather Wand!', '🪶');
+                return;
+            }
+            state.purrs -= cost;
+            state.featherBuffSeconds = 18;
+            playSound('unlock');
+
+            // Make all cats happy!
+            Object.keys(state.cats).forEach(id => {
+                if (state.cats[id].unlocked) state.cats[id].pose = 'happy';
+            });
+
+            if (event) spawnFloatingParticle(event.clientX, event.clientY, '🪶 Play Frenzy! x2 Purrs!');
+            logActivity('Waved the Feather Wand! All kitties are pouncing for 2x Purr Love!');
+            updateAllUI();
+        }
+
+        /********************************************************************
+         * 7. CUSTOMER COUNTER & COFFEE BREWING LOOP
+         ********************************************************************/
+        function getUnlockedRecipes() {
+            return MENU_RECIPES.filter(r => (state.recipeLevels[r.id] || 0) > 0);
+        }
+
+        function createRandomCustomer() {
+            const unlockedRecipes = getUnlockedRecipes();
+            const recipe = unlockedRecipes[Math.floor(Math.random() * unlockedRecipes.length)];
+            const person = CUSTOMER_NAMES[Math.floor(Math.random() * CUSTOMER_NAMES.length)];
+            const unlockedCats = CAT_DATABASE.filter(c => state.cats[c.id]?.unlocked);
+            const favCat = unlockedCats[Math.floor(Math.random() * unlockedCats.length)];
+
+            const recipeLv = state.recipeLevels[recipe.id] || 1;
+            const totalRewardCoins = Math.round(recipe.basePrice * (1 + (recipeLv - 1) * 0.45));
+            const tipPurrs = Math.max(2, Math.round(unlockedCats.length * 1.5));
+
+            return {
+                id: 'cust_' + Date.now() + '_' + Math.random(),
+                person,
+                recipe,
+                favCat,
+                rewardCoins: totalRewardCoins,
+                rewardPurrs: tipPurrs
+            };
+        }
+
+        function spawnInitialCustomers() {
+            for (let i = 0; i < 3; i++) {
+                if (!activeCustomers[i]) activeCustomers[i] = createRandomCustomer();
+            }
+            renderCustomerSlots();
+        }
+
+        function renderCustomerSlots() {
+            const grid = document.getElementById('customerSlotsGrid');
+            grid.innerHTML = '';
+
+            activeCustomers.forEach((cust, idx) => {
+                const slot = document.createElement('div');
+                if (!cust) {
+                    slot.className = 'rounded-2xl border-2 border-dashed border-[#D5BDAF] bg-[#F5EBE0]/50 p-4 flex flex-col items-center justify-center min-h-[130px] text-xs text-[#8D7768]';
+                    slot.innerHTML = `<span class="text-xl mb-1 opacity-60">🚪</span><span>Awaiting next guest...</span>`;
+                } else {
+                    const icon = cust.recipe.displayIcon || cust.recipe.icon;
+                    slot.className = 'rounded-2xl border-2 border-[#6C584C] bg-[#FFF8EC] p-3 flex flex-col justify-between shadow-sm hover:shadow-md transition-all';
+                    slot.innerHTML = `
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="flex items-center gap-2">
+                                <div class="w-10 h-10 rounded-xl bg-[#FFE5EC] border-2 border-[#6C584C] flex items-center justify-center text-xl shrink-0">
+                                    ${cust.person.avatar}
+                                </div>
+                                <div>
+                                    <div class="font-heading font-bold text-sm text-[#6C584C] leading-tight">${cust.person.name}</div>
+                                    <div class="text-[11px] text-[#8D7768] leading-tight">Wants to sit near <strong>${cust.favCat.name}</strong></div>
+                                </div>
+                            </div>
+                            <!-- Steaming Cup Icon -->
+                            <div class="relative bg-white px-2 py-1 rounded-xl border border-[#D5BDAF] text-lg">
+                                <span class="animate-steam absolute -top-2 left-2 text-[10px] opacity-70">♨️</span>
+                                ${icon}
+                            </div>
+                        </div>
+
+                        <div class="my-2 bg-[#F5EBE0] rounded-xl px-2.5 py-1.5 border border-[#D5BDAF] flex items-center justify-between text-xs">
+                            <span class="font-semibold text-[#6C584C] truncate">${cust.recipe.name}</span>
+                            <span class="font-bold text-[#718355] shrink-0">+${cust.rewardCoins} 🪙</span>
+                        </div>
+
+                        <button onclick="serveCustomer(${idx}, event)" class="w-full py-1.5 rounded-xl bg-[#ADC178] hover:bg-[#9BB065] text-white font-heading font-semibold text-xs border-2 border-[#53643B] btn-matcha flex items-center justify-center gap-1.5">
+                            <span>✨ Brew & Serve</span>
+                            <span class="text-[10px] bg-[#53643B]/30 px-1.5 py-0.5 rounded-md">+${cust.rewardPurrs} 💖 Tip</span>
+                        </button>
+                    `;
+                }
+                grid.appendChild(slot);
+            });
+        }
+
+        function serveCustomer(slotIndex, event, isAuto = false) {
+            const cust = activeCustomers[slotIndex];
+            if (!cust) return;
+
+            state.coins += cust.rewardCoins;
+            state.purrs += cust.rewardPurrs;
+            state.totalServed++;
+
+            if (!isAuto) {
+                playSound('coin');
+                if (event) {
+                    spawnFloatingParticle(event.clientX, event.clientY, `🍵 +${cust.rewardCoins} 🪙  +${cust.rewardPurrs} 💖`);
+                }
+                logActivity(`Served ${cust.recipe.name} to ${cust.person.name}! Earned ${cust.rewardCoins} 🪙 & ${cust.rewardPurrs} 💖 tip.`);
+            } else {
+                logActivity(`Helper Barista served ${cust.recipe.name} to ${cust.person.name} (+${cust.rewardCoins} 🪙).`);
+            }
+
+            activeCustomers[slotIndex] = null;
+            renderCustomerSlots();
+            updateTopBarUI();
+            renderShops();
+
+            // Spawn new customer after a brief pause
+            setTimeout(() => {
+                if (!activeCustomers[slotIndex]) {
+                    activeCustomers[slotIndex] = createRandomCustomer();
+                    renderCustomerSlots();
+                }
+            }, 1400);
+        }
+
+        /********************************************************************
+         * 8. SHOP, UPGRADES & NEKO SCRAPBOOK TABS
+         ********************************************************************/
+        function switchTab(tabName) {
+            currentTab = tabName;
+            ['decor', 'kitchen', 'nekobook'].forEach(t => {
+                const btn = document.getElementById(`tabBtn-${t}`);
+                const content = document.getElementById(`tabContent-${t}`);
+                if (t === tabName) {
+                    btn.className = 'tab-btn py-2 px-2 rounded-2xl font-heading font-semibold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all bg-[#ADC178] text-[#FFFDF7] border-2 border-[#53643B] shadow-sm relative';
+                    content.classList.remove('hidden');
+                } else {
+                    btn.className = 'tab-btn py-2 px-2 rounded-2xl font-heading font-semibold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all text-[#6C584C] hover:bg-[#E6D5C3] relative';
+                    content.classList.add('hidden');
+                }
+            });
+            if (tabName === 'nekobook') {
+                document.getElementById('nekoNewDot').classList.add('hidden');
+                renderNekoBook();
+            } else {
+                renderShops();
+            }
+        }
+
+        function getDecorUpgradeCost(spot, currentLv) {
+            if (currentLv === 0) return spot.baseCost;
+            return Math.round((spot.baseCost || 40) * Math.pow(1.65, currentLv));
+        }
+
+        function buyOrUpgradeDecor(spotId, event) {
+            const spot = DECOR_SPOTS.find(s => s.id === spotId);
+            const currentLv = state.decorLevels[spotId] || 0;
+            const cost = getDecorUpgradeCost(spot, currentLv);
+
+            if (state.coins < cost) {
+                showToast(`Need ${cost} Cafe Coins! Serve more guests or pet cats.`, '🪙');
+                return;
+            }
+
+            state.coins -= cost;
+            state.decorLevels[spotId] = currentLv + 1;
+            playSound('unlock');
+
+            // Check if this unlocks any new cats!
+            let newlyUnlockedCat = null;
+            spot.attracts.forEach(catId => {
+                if (!state.cats[catId].unlocked) {
+                    state.cats[catId].unlocked = true;
+                    state.cats[catId].affection = 1;
+                    newlyUnlockedCat = CAT_DATABASE.find(c => c.id === catId);
+                }
+            });
+
+            refreshCatPlacements();
+            if (newlyUnlockedCat) {
+                document.getElementById('nekoNewDot').classList.remove('hidden');
+                showToast(`New Cat Visited: ${newlyUnlockedCat.name} (${newlyUnlockedCat.title})!`, '🐱');
+                logActivity(`🎉 ${newlyUnlockedCat.name} wandered into the cafe to check out the ${spot.name}!`);
+            } else {
+                showToast(`Upgraded ${spot.name} to Lv.${state.decorLevels[spotId]}!`, '🪴');
+            }
+
+            if (event) spawnFloatingParticle(event.clientX, event.clientY, `✨ ${spot.name} Lv.${state.decorLevels[spotId]}`);
+            updateAllUI();
+            saveGame();
+        }
+
+        function buyOrUpgradeRecipe(recipeId, event) {
+            const recipe = MENU_RECIPES.find(r => r.id === recipeId);
+            const currentLv = state.recipeLevels[recipeId] || 0;
+            const cost = currentLv === 0 ? recipe.upgradeCost : Math.round(recipe.upgradeCost * Math.pow(1.6, currentLv));
+
+            if (state.coins < cost) {
+                showToast(`Need ${cost} Cafe Coins to upgrade ${recipe.name}!`, '🪙');
+                return;
+            }
+
+            state.coins -= cost;
+            state.recipeLevels[recipeId] = currentLv + 1;
+            playSound('coin');
+
+            document.getElementById('chalkboardSpecial').textContent = `${recipe.displayIcon || recipe.icon} ${recipe.name} (Lv.${state.recipeLevels[recipeId]})`;
+            if (event) spawnFloatingParticle(event.clientX, event.clientY, `🍰 Recipe Lv.${state.recipeLevels[recipeId]}!`);
+            showToast(`${recipe.name} is now Lv.${state.recipeLevels[recipeId]}!`, '🍵');
+            updateAllUI();
+            saveGame();
+        }
+
+        function upgradeBarista(event) {
+            const cost = Math.round(80 * Math.pow(1.85, state.baristaLevel));
+            if (state.coins < cost) {
+                showToast(`Need ${cost} Cafe Coins to train Helper Barista!`, '🧑‍🍳');
+                return;
+            }
+            state.coins -= cost;
+            state.baristaLevel++;
+            playSound('unlock');
+            if (event) spawnFloatingParticle(event.clientX, event.clientY, `🧑‍🍳 Barista Lv.${state.baristaLevel}!`);
+            showToast(`Helper Barista upgraded to Lv.${state.baristaLevel}!`, '🧋');
+            updateAllUI();
+            saveGame();
+        }
+
+        function renderShops() {
+            // Render Decor Shop
+            const decorList = document.getElementById('decorShopList');
+            decorList.innerHTML = '';
+
+            DECOR_SPOTS.forEach(spot => {
+                const lv = state.decorLevels[spot.id] || 0;
+                const cost = getDecorUpgradeCost(spot, lv);
+                const canAfford = state.coins >= cost;
+                const attractedNames = spot.attracts.map(cid => {
+                    const c = CAT_DATABASE.find(x => x.id === cid);
+                    return c ? c.name : '';
+                }).join(' & ');
+
+                const item = document.createElement('div');
+                item.className = 'rounded-2xl border-2 border-[#D5BDAF] bg-[#FFF8EC] p-3 flex items-center justify-between gap-3';
+                item.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-2xl bg-[#F5EBE0] border-2 border-[#6C584C] flex items-center justify-center text-2xl shrink-0">
+                            ${spot.icon}
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-1.5">
+                                <h4 class="font-heading font-bold text-sm text-[#6C584C]">${spot.name}</h4>
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${lv > 0 ? 'bg-[#E9F5DB] text-[#53643B]' : 'bg-[#F5EBE0] text-[#8D7768]'}">
+                                    ${lv > 0 ? `Lv.${lv}` : 'Locked'}
+                                </span>
+                            </div>
+                            <p class="text-xs text-[#8D7768] leading-snug">${spot.desc}</p>
+                            <div class="text-[11px] font-semibold text-[#C94A6A] mt-0.5">
+                                🐾 Attracts: ${attractedNames} • +${spot.passivePurr}💖/s
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="buyOrUpgradeDecor('${spot.id}', event)" class="px-3 py-2 rounded-xl font-heading font-semibold text-xs border-2 shrink-0 ${canAfford ? 'bg-[#ADC178] hover:bg-[#9BB065] text-white border-[#53643B] btn-matcha' : 'bg-[#E6D5C3] text-[#8D7768] border-[#A98467] opacity-75'}">
+                        <div>${lv === 0 ? 'Unlock' : 'Upgrade'}</div>
+                        <div class="font-bold">${cost} 🪙</div>
+                    </button>
+                `;
+                decorList.appendChild(item);
+            });
+
+            // Render Barista Widget
+            const baristaCost = Math.round(80 * Math.pow(1.85, state.baristaLevel));
+            document.getElementById('baristaLevelBadge').textContent = `Lv. ${state.baristaLevel}`;
+            const bBtn = document.getElementById('upgradeBaristaBtn');
+            bBtn.textContent = `${state.baristaLevel === 0 ? 'Hire Helper Barista' : 'Train Faster Barista'} (${baristaCost} 🪙)`;
+            document.getElementById('baristaStatusText').textContent = state.baristaLevel === 0
+                ? 'Not Hired Yet'
+                : `Lv.${state.baristaLevel} (Serves every ${Math.max(2, 9 - state.baristaLevel)}s)`;
+
+            // Render Kitchen Recipes
+            const recipeList = document.getElementById('recipeShopList');
+            recipeList.innerHTML = '';
+
+            MENU_RECIPES.forEach(recipe => {
+                const lv = state.recipeLevels[recipe.id] || 0;
+                const cost = lv === 0 ? recipe.upgradeCost : Math.round(recipe.upgradeCost * Math.pow(1.6, lv));
+                const canAfford = state.coins >= cost;
+                const currentSellPrice = Math.round(recipe.basePrice * (1 + Math.max(0, lv - 1) * 0.45));
+                const icon = recipe.displayIcon || recipe.icon;
+
+                const item = document.createElement('div');
+                item.className = 'rounded-2xl border-2 border-[#D5BDAF] bg-[#FFF8EC] p-3 flex items-center justify-between gap-3';
+                item.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-11 h-11 rounded-2xl bg-[#FFE5EC] border-2 border-[#6C584C] flex items-center justify-center text-2xl shrink-0">
+                            ${icon}
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-1.5">
+                                <h4 class="font-heading font-bold text-sm text-[#6C584C]">${recipe.name}</h4>
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${lv > 0 ? 'bg-[#FFF8E7] text-[#9C7A44]' : 'bg-[#F5EBE0] text-[#8D7768]'}">
+                                    ${lv > 0 ? `Lv.${lv}` : 'Locked'}
+                                </span>
+                            </div>
+                            <p class="text-xs text-[#8D7768]">${recipe.desc}</p>
+                            <div class="text-[11px] font-semibold text-[#718355] mt-0.5">
+                                Sell Price: ${currentSellPrice} 🪙 per order
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="buyOrUpgradeRecipe('${recipe.id}', event)" class="px-3 py-2 rounded-xl font-heading font-semibold text-xs border-2 shrink-0 ${canAfford ? 'bg-[#ADC178] hover:bg-[#9BB065] text-white border-[#53643B] btn-matcha' : 'bg-[#E6D5C3] text-[#8D7768] border-[#A98467] opacity-75'}">
+                        <div>${lv === 0 ? 'Unlock' : 'Upgrade'}</div>
+                        <div class="font-bold">${cost} 🪙</div>
+                    </button>
+                `;
+                recipeList.appendChild(item);
+            });
+        }
+
+        function renderNekoBook() {
+            const grid = document.getElementById('nekoBookGrid');
+            grid.innerHTML = '';
+
+            let unlockedTotal = 0;
+
+            CAT_DATABASE.forEach(cat => {
+                const cState = state.cats[cat.id];
+                const isUnlocked = cState && cState.unlocked;
+                if (isUnlocked) unlockedTotal++;
+
+                const reqSpot = DECOR_SPOTS.find(s => s.id === cat.RequiredDecor);
+                const heartsHTML = isUnlocked
+                    ? '❤️'.repeat(cState.affection || 1) + '🤍'.repeat(5 - (cState.affection || 1))
+                    : '🤍🤍🤍🤍🤍';
+
+                const card = document.createElement('div');
+                card.className = `rounded-2xl border-2 p-3 flex items-center gap-3.5 transition ${isUnlocked ? 'border-[#6C584C] bg-[#FFF8EC] hover:bg-[#FFFDF7] cursor-pointer shadow-sm' : 'border-dashed border-[#D5BDAF] bg-[#F5EBE0]/60 opacity-75'}`;
+                if (isUnlocked) {
+                    card.onclick = (e) => openCatModal(cat.id, e);
+                }
+
+                card.innerHTML = `
+                    <div class="w-20 h-20 rounded-2xl ${isUnlocked ? 'bg-[#FFE5EC]' : 'bg-[#E6D5C3]'} border-2 border-[#6C584C] flex items-center justify-center shrink-0 overflow-hidden">
+                        ${isUnlocked ? getCatSVG(cat, 'awake', 'w-16 h-16') : '<span class="text-3xl opacity-40">❓</span>'}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between gap-1">
+                            <h4 class="font-heading font-bold text-base text-[#6C584C] truncate">
+                                ${isUnlocked ? `${cat.name} — ${cat.title}` : '??? Mystery Kitty'}
+                            </h4>
+                        </div>
+                        <div class="text-xs font-semibold text-[#718355]">
+                            ${isUnlocked ? `${cat.breed} • Snack: ${cat.snack}` : `Unlock "${reqSpot ? reqSpot.name : 'Decor'}" to attract!`}
+                        </div>
+                        <p class="text-xs text-[#8D7768] italic mt-1 line-clamp-2">
+                            "${isUnlocked ? cat.quirk : 'This shy kitty is waiting for the right cozy spot in your cafe...'}"
+                        </p>
+                        <div class="flex items-center justify-between mt-1.5 text-xs">
+                            <span>${heartsHTML}</span>
+                            ${isUnlocked ? `<span class="font-bold text-[#C94A6A] bg-[#FFE5EC] px-2 py-0.5 rounded-lg border border-[#FFB3C6]">Give Treat (10 💖)</span>` : ''}
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            document.getElementById('scrapbookProgressBadge').textContent = `${unlockedTotal} / ${CAT_DATABASE.length}`;
+        }
+
+        /********************************************************************
+         * 9. CAT CLOSE-UP SCRAPBOOK MODAL & BONDING
+         ********************************************************************/
+        function openCatModal(catId, event) {
+            if (event) event.stopPropagation();
+            const cat = CAT_DATABASE.find(c => c.id === catId);
+            const cState = state.cats[catId];
+            if (!cat || !cState || !cState.unlocked) return;
+
+            playSound('meow');
+            const modal = document.getElementById('catModal');
+            const content = document.getElementById('catModalContent');
+            const heartsHTML = '❤️'.repeat(cState.affection || 1) + '🤍'.repeat(5 - (cState.affection || 1));
+
+            content.innerHTML = `
+                <div class="flex flex-col items-center text-center">
+                    <div class="w-32 h-32 rounded-3xl bg-[#FFE5EC] border-4 border-[#6C584C] flex items-center justify-center mb-3 shadow-inner cursor-pointer" onclick="petCatOnFloor('${cat.id}', event)">
+                        <div class="animate-cat">
+                            ${getCatSVG(cat, 'happy', 'w-28 h-28')}
+                        </div>
+                    </div>
+                    <span class="text-xs font-bold uppercase tracking-wider px-3 py-0.5 rounded-full bg-[#E9F5DB] text-[#53643B] border border-[#ADC178] mb-1">
+                        ${cat.breed}
+                    </span>
+                    <h3 class="text-2xl font-heading font-bold text-[#6C584C]">${cat.name}</h3>
+                    <p class="text-xs font-semibold text-[#C94A6A] mb-3">${cat.title}</p>
+
+                    <div class="w-full bg-[#F5EBE0] rounded-2xl p-3.5 border-2 border-[#D5BDAF] text-left text-xs space-y-2 mb-4">
+                        <div class="flex justify-between">
+                            <span class="text-[#8D7768] font-semibold">Affection Level:</span>
+                            <span>${heartsHTML}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-[#8D7768] font-semibold">Favorite Snack:</span>
+                            <strong class="text-[#6C584C]">🍡 ${cat.snack}</strong>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-[#8D7768] font-semibold">Passive Cafe Boost:</span>
+                            <strong class="text-[#718355]">+${cat.basePurr + cState.affection} 💖/s & +${cat.baseCoin} 🪙/s</strong>
+                        </div>
+                        <div class="pt-1 border-t border-[#D5BDAF] text-[#6C584C] italic">
+                            "${cat.quirk}"
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2.5 w-full">
+                        <button onclick="petCatOnFloor('${cat.id}', event)" class="flex-1 py-2.5 rounded-xl bg-[#ADC178] text-white font-heading font-bold text-sm border-2 border-[#53643B] btn-matcha">
+                            🐾 Pet ${cat.name}
+                        </button>
+                        <button onclick="feedSpecialSnack('${cat.id}', event)" class="flex-1 py-2.5 rounded-xl bg-[#FFB3C6] text-[#6C584C] font-heading font-bold text-sm border-2 border-[#C94A6A] btn-sakura">
+                            🍡 Feed Snack (25 💖)
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function feedSpecialSnack(catId, event) {
+            const cat = CAT_DATABASE.find(c => c.id === catId);
+            const cState = state.cats[catId];
+            if (!cat || !cState) return;
+
+            if (cState.affection >= 5) {
+                showToast(`${cat.name} is already at Max Affection (5 Hearts)!`, '💖');
+                return;
+            }
+            const cost = 25;
+            if (state.purrs < cost) {
+                showToast(`Need 25 Purr Love 💖 to treat ${cat.name} to ${cat.snack}!`, '🍡');
+                return;
+            }
+            state.purrs -= cost;
+            cState.affection = Math.min(5, (cState.affection || 1) + 1);
+            playSound('unlock');
+            if (event) spawnFloatingParticle(event.clientX, event.clientY, `❤️ Affection Lv.${cState.affection}!`);
+            showToast(`${cat.name} loved the ${cat.snack}!`, '😻');
+            openCatModal(catId);
+            updateAllUI();
+            saveGame();
+        }
+
+        function closeCatModal() {
+            const modal = document.getElementById('catModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        /********************************************************************
+         * 10. PASSIVE IDLE INCOME & GAME LOOP (Runs Every 1 Second)
+         ********************************************************************/
+        function calculatePassiveRates() {
+            let purrPerSec = 0;
+            let coinPerSec = 0;
+
+            // From unlocked furniture
+            DECOR_SPOTS.forEach(spot => {
+                const lv = state.decorLevels[spot.id] || 0;
+                if (lv > 0) {
+                    purrPerSec += spot.passivePurr * lv;
+                    coinPerSec += spot.passiveCoin * lv;
+                }
+            });
+
+            // From unlocked cats
+            CAT_DATABASE.forEach(cat => {
+                const cState = state.cats[cat.id];
+                if (cState && cState.unlocked) {
+                    purrPerSec += cat.basePurr + (cState.affection || 1);
+                    coinPerSec += cat.baseCoin;
+                }
+            });
+
+            // Multipliers from Treat Bowl & Feather Wand
+            if (state.treatBowl > 15) {
+                purrPerSec = Math.round(purrPerSec * 1.25);
+                coinPerSec = Math.round(coinPerSec * 1.25);
+            }
+            if (state.featherBuffSeconds > 0) {
+                purrPerSec *= 2;
+            }
+
+            return { purrPerSec, coinPerSec };
+        }
+
+        function gameTick() {
+            const { purrPerSec, coinPerSec } = calculatePassiveRates();
+            state.purrs += purrPerSec;
+            state.coins += coinPerSec;
+
+            // Gently drain treat bowl
+            if (state.treatBowl > 0) {
+                state.treatBowl = Math.max(0, state.treatBowl - 0.8);
+            }
+
+            // Feather wand countdown
+            const featherBadge = document.getElementById('featherBuffBadge');
+            const wandEmoji = document.getElementById('wandEmoji');
+            if (state.featherBuffSeconds > 0) {
+                state.featherBuffSeconds--;
+                featherBadge.classList.remove('hidden');
+                document.getElementById('featherTimer').textContent = state.featherBuffSeconds;
+                wandEmoji.classList.add('wand-active');
+            } else {
+                featherBadge.classList.add('hidden');
+                wandEmoji.classList.remove('wand-active');
+            }
+
+            // Auto-Barista helper logic
+            if (state.baristaLevel > 0) {
+                baristaCooldown++;
+                const interval = Math.max(2, 9 - state.baristaLevel);
+                if (baristaCooldown >= interval) {
+                    baristaCooldown = 0;
+                    const availableSlot = activeCustomers.findIndex(c => c !== null);
+                    if (availableSlot !== -1) {
+                        serveCustomer(availableSlot, null, true);
+                    }
+                }
+            }
+
+            updateTopBarUI();
+        }
+
+        /********************************************************************
+         * 11. UI HELPERS, PARTICLES, SETTINGS & SAVING
+         ********************************************************************/
+        function updateTopBarUI() {
+            const { purrPerSec, coinPerSec } = calculatePassiveRates();
+            document.getElementById('coinDisplay').textContent = Math.floor(state.coins).toLocaleString();
+            document.getElementById('purrDisplay').textContent = Math.floor(state.purrs).toLocaleString();
+            document.getElementById('coinRateDisplay').textContent = `(+${coinPerSec}/s)`;
+            document.getElementById('purrRateDisplay').textContent = `(+${purrPerSec}/s)`;
+
+            const unlockedCount = CAT_DATABASE.filter(c => state.cats[c.id]?.unlocked).length;
+            document.getElementById('catCountDisplay').textContent = `${unlockedCount} / ${CAT_DATABASE.length}`;
+
+            // Cafe Rank Title based on unlocked cats
+            const ranks = [
+                'Lv. 1 Cozy Corner',
+                'Lv. 2 Matcha Hideaway',
+                'Lv. 3 Whisker Lounge',
+                'Lv. 4 Sunbeam Sanctuary',
+                'Lv. 5 Sakura Teahouse',
+                'Lv. 6 Starlight Neko Haven',
+                'Lv. 7 Komorebi Paradise',
+                'Lv. MAX Legendary Cat Cafe'
+            ];
+            document.getElementById('cafeRankBadge').textContent = ranks[Math.min(ranks.length - 1, unlockedCount - 1)];
+
+            // Treat Bowl UI
+            const bowlPct = Math.round(state.treatBowl);
+            document.getElementById('bowlPercentText').textContent = `${bowlPct}%`;
+            document.getElementById('bowlProgressBar').style.width = `${bowlPct}%`;
+            const bowlStatus = document.getElementById('bowlStatusLabel');
+            if (bowlPct > 50) {
+                bowlStatus.textContent = 'Full & Yummy (+25% Boost)';
+                bowlStatus.className = 'text-[#718355]';
+            } else if (bowlPct > 15) {
+                bowlStatus.textContent = 'Getting Low (+25% Boost)';
+                bowlStatus.className = 'text-[#F4A261]';
+            } else {
+                bowlStatus.textContent = 'Empty! Refill for Boost';
+                bowlStatus.className = 'text-[#C94A6A] animate-pulse';
+            }
+        }
+
+        function updateAllUI() {
+            updateTopBarUI();
+            renderCafeFloor();
+            renderCustomerSlots();
+            renderShops();
+            if (currentTab === 'nekobook') renderNekoBook();
+        }
+
+        function spawnFloatingParticle(x, y, text) {
+            const el = document.createElement('div');
+            el.className = 'floating-particle font-heading font-bold text-xs sm:text-sm bg-[#FFFDF7] text-[#6C584C] px-2.5 py-1 rounded-full border-2 border-[#6C584C] shadow-md';
+            el.style.left = `${Math.max(20, Math.min(window.innerWidth - 150, x - 40))}px`;
+            el.style.top = `${Math.max(20, y - 20)}px`;
+            el.textContent = text;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 1200);
+        }
+
+        function showToast(message, icon = '🐾') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'bg-[#6C584C] text-[#FFFDF7] px-4 py-2.5 rounded-2xl border-2 border-[#D5BDAF] shadow-xl flex items-center gap-2 text-xs sm:text-sm font-semibold transition-all duration-300';
+            toast.innerHTML = `<span class="text-lg">${icon}</span><span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 2800);
+        }
+
+        function logActivity(msg) {
+            const el = document.getElementById('activityLogText');
+            if (el) el.textContent = msg;
+        }
+
+        // Settings Modal
+        let resetConfirmStage = false;
+        function openSettingsModal() {
+            resetConfirmStage = false;
+            document.getElementById('resetConfirmBtn').innerHTML = `<i class="fas fa-trash-alt mr-1"></i> Reset Cafe`;
+            document.getElementById('statTotalPets').textContent = state.totalPets.toLocaleString();
+            document.getElementById('statTotalServed').textContent = state.totalServed.toLocaleString();
+            const unlockedCount = CAT_DATABASE.filter(c => state.cats[c.id]?.unlocked).length;
+            document.getElementById('statCatsUnlocked').textContent = `${unlockedCount} / ${CAT_DATABASE.length}`;
+            const modal = document.getElementById('settingsModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeSettingsModal() {
+            const modal = document.getElementById('settingsModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function manualSave() {
+            saveGame();
+            playSound('coin');
+            showToast('Cafe progress saved to browser storage!', '💾');
+            closeSettingsModal();
+        }
+
+        function confirmResetGame() {
+            const btn = document.getElementById('resetConfirmBtn');
+            if (!resetConfirmStage) {
+                resetConfirmStage = true;
+                btn.innerHTML = `⚠️ Click Again to Confirm`;
+                return;
+            }
+            localStorage.removeItem('komorebi_cat_cafe_v1');
+            state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+            spotAssignments = {};
+            activeCustomers = [null, null, null];
+            refreshCatPlacements();
+            spawnInitialCustomers();
+            updateAllUI();
+            closeSettingsModal();
+            showToast('Started a fresh Cat Cafe!', '🌱');
+        }
+
+        // Start game loop on window load
+        window.onload = function () {
+            loadGame();
+            setInterval(gameTick, 1000);
+            setInterval(cycleCatPosesAndSpots, 7000);
+            setInterval(saveGame, 10000);
+        };
+    </script>
+</body>
+</html>
